@@ -1,38 +1,41 @@
-import os
-from flask import Flask, request
-import telebot
+  import os
+from telethon import TelegramClient, events
 
-TOKEN = '8918468809:AAEcdcGqm0sYojBZAvoDwv0YHugXqo8M-jM'
-bot = telebot.TeleBot(TOKEN)
+# بيانات التطبيق الخاصة بك
+API_ID = 38922466
+API_HASH = "01c78598b98912f64d5e1f19d8775008"
+PHONE_NUMBER = "+9647853349876"
 
-app = Flask(__name__)
+# عبارة الرد التلقائي المزخرفة
+REPLY_MESSAGE = (
+    "▂▃▅▆▇ 🌟 أهلاً بك 🌟 ▇▆▅▃▂\n\nعذراً، لسنا متاحين الآن...\nولكن\n✨ [ سوف يتم"
+    ' الرد عليك بواسطة "السيد" ] ✨\n\nيرجى ترك رسالتك وسنقوم بالرد قريباً ⏳👇'
+)
 
-welcome_message = """ ▂▃▅▆▇ 🌟 أهلاً بك 🌟 ▇▆▅▃▂ 
-
-عذراً، لسنا متاحين الآن... 
-ولكن 
-✨ [ سوف يتم الرد عليك بواسطة "السيد" ] ✨
-
-يرجى ترك رسالتك وسنقوم بالرد قريباً ⏳👇"""
-
-
-@bot.message_handler(func=lambda message: True)
-def send_welcome(message):
-  bot.reply_to(message, welcome_message)
+# إنشاء جلسة للـ UserBot
+client = TelegramClient("sayed_session", API_ID, API_HASH)
 
 
-@app.route('/')
-def home():
-  return 'System is active and running 24/7!'
+@client.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
+async def auto_reply(event):
+  # تجاهل الرسائل من بوتات أخرى أو الرسائل المحذولة
+  if event.sender and event.sender.bot:
+    return
+
+  try:
+    # الرد على الشخص بالعبارة المزخرفة
+    await event.reply(REPLY_MESSAGE)
+  except Exception as e:
+    print(f"Error sending auto-reply: {e}")
 
 
-if __name__ == '__main__':
-  port = int(os.environ.get('PORT', 5000))
-  import threading
+def main():
+  print("Starting Telegram UserBot for Sayed...")
+  # بدء التشغيل وربط الحساب برقم الهاتف
+  client.start(phone=PHONE_NUMBER)
+  print("UserBot is running and listening for incoming messages...")
+  client.run_until_disconnected()
 
-  t = threading.Thread(target=bot.infinity_polling)
-  t.daemon = True
-  t.start()
 
-  app.run(host='0.0.0.0', port=port)
-
+if __name__ == "__main__":
+  main()
