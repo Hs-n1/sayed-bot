@@ -1,4 +1,4 @@
-  import os
+import os
 from telethon import TelegramClient, events
 
 # بيانات التطبيق الخاصة بك
