@@ -21,6 +21,9 @@ API_ID = 38922466
 API_HASH = "01c78598b98912f64d5e1f19d8775008"
 PHONE_NUMBER = "+9647853349876"
 
+# قراءة كود التحقق من متغيرات البيئة في Render إذا وجد
+LOGIN_CODE = os.environ.get("LOGIN_CODE", None)
+
 # عبارة الرد التلقائي المزخرفة
 REPLY_MESSAGE = (
     "▂▃▅▆▇ 🌟 أهلاً بك 🌟 ▇▆▅▃▂\n\nعذراً، لسنا متاحين الآن...\nولكن\n✨ [ سوف يتم"
@@ -47,7 +50,23 @@ def main():
   t.start()
 
   print("Starting Telegram UserBot for Sayed...")
-  client.start(phone=PHONE_NUMBER)
+
+  # الاتصال وتسجيل الدخول مع تمرير الكود تلقائياً إذا كان موجوداً
+  client.connect()
+  if not client.is_user_authorized():
+    client.send_code_request(PHONE_NUMBER)
+    if LOGIN_CODE:
+      print("Submitting login code from Environment Variables...")
+      try:
+        client.sign_in(PHONE_NUMBER, LOGIN_CODE)
+      except Exception as e:
+        print(f"Error signing in with code: {e}")
+    else:
+      print(
+          "Please add 'LOGIN_CODE' in Render Environment Variables with your"
+          " Telegram OTP code!"
+      )
+
   print("UserBot is running and listening for incoming messages...")
   client.run_until_disconnected()
 
