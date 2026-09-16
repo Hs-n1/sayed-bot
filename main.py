@@ -1,5 +1,20 @@
 import os
+from threading import Thread
+from flask import Flask
 from telethon import TelegramClient, events
+
+# إعداد خادم الويب الوهمي لإرضاء سيرفر Render
+app = Flask('')
+
+
+@app.route('/')
+def home():
+  return "Sayed UserBot is Alive and Running!"
+
+
+def run_web():
+  app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
 
 # بيانات التطبيق الخاصة بك
 API_ID = 38922466
@@ -18,20 +33,20 @@ client = TelegramClient("sayed_session", API_ID, API_HASH)
 
 @client.on(events.NewMessage(incoming=True, func=lambda e: e.is_private))
 async def auto_reply(event):
-  # تجاهل الرسائل من بوتات أخرى أو الرسائل المحذولة
   if event.sender and event.sender.bot:
     return
-
   try:
-    # الرد على الشخص بالعبارة المزخرفة
     await event.reply(REPLY_MESSAGE)
   except Exception as e:
     print(f"Error sending auto-reply: {e}")
 
 
 def main():
+  # تشغيل خادم الويب في الخلفية
+  t = Thread(target=run_web)
+  t.start()
+
   print("Starting Telegram UserBot for Sayed...")
-  # بدء التشغيل وربط الحساب برقم الهاتف
   client.start(phone=PHONE_NUMBER)
   print("UserBot is running and listening for incoming messages...")
   client.run_until_disconnected()
